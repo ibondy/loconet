@@ -1,48 +1,102 @@
-# LocoNet2
-A refactor of the original [LocoNet](https://github.com/mrrwa/LocoNet) library to be much more object oriented, with derived classes for each different hardware interface
+# LocoNet (.NET)
 
-Currently, the library supports the ESP32 and RPi Pico (RP2040) micro controllers.
+A managed **.NET 10** port of the [LocoNet2](https://github.com/mrrwa/LocoNet2)
+Arduino library, focused on **LocoNet-over-TCP**. Talk to a LocoBuffer-USB exposed
+by `ser2net`, an ESP32 / RP2040 running LocoNet2 firmware in TCP-bridge mode, or
+JMRI's `LocoNetOverTcp` server — from any platform .NET runs on (Windows, Linux,
+macOS, containers).
 
-This version of the LocoNet2 library has built on the code contributions from [positron96/LocoNet2](https://github.com/positron96/LocoNet2)
+The original C++ Arduino sources for ESP32/Pico/STM32/UnoR4 are preserved in this
+fork so the protocol behaviour can be cross-checked against the reference
+implementation, but the .NET projects under [`dotnet/`](dotnet/) are the primary
+focus.
 
-The core LocoNet class is now split into 2 classes: 
-1. `LocoNetPhy` - an implementation of physical LocoNet bus with rx and tx functionality. 
-Upon receiving a message, an Phy class sends a message to a LocoNetDispatcher for further processing.
+## Why a managed port?
 
-The class is still abstract with actual implementations residing in different classes.
-For ESP32,  `LocoNetESP32` class was tested to work with the new architecture.
-For RP2040, `LocoNetRP2040` class was tested to work with the new architecture.
- 
-2. `LocoNetDispatcher` - a class that broadcasts LocoNet messages to consumer objects (that implement a `LocoNetConsumer` interface). 
-Has built-in filtering that was orginally present in LocoNet class.
+- Run model-railway tooling on a Raspberry Pi, a NAS, or a desktop without an
+  Arduino in the loop.
+- Get strong typing, async/await, structured cancellation, and modern testing
+  (xUnit) on top of a protocol stack originally written for 8/32-bit MCUs.
+- Re-use the same library from desktop throttles, headless services, dispatch
+  systems, automated test rigs, and CI.
 
-This architecture allows for several sources of LocoNet messages to co-exist (physical LocoNet, LocoNet over WiFi, LocoNet over Serial) and to exchange messages.
-Upon receiving a LocoNet message from outside world, the source classes send messages to LocoNetDispatcher, which broadcasts them to all other LocoNet sources that emit the message to outside world.
+## Repository layout
 
-`LocoNet` class is now an alias for `LocoNetDispatcher`. Existing utility classes (`LocoNetThrottle`, `LocoNetFastClock` etc) still use `LocoNet` class and have not changed much. Probably they will work with minor modifications.
+| Path | Purpose |
+| --- | --- |
+| `dotnet/LocoNet.Net` | Class library — opcodes, messages, framing, dispatcher, throttle, fast clock, CV/SV access, JMRI parser, resilient TCP client. |
+| `dotnet/LocoNet.Net.Tests` | xUnit test suite (133 tests, network resilience tests use loopback `TcpListener`). |
+| `dotnet/LocoNet.Net.Sample` | Console app demonstrating connect, auto-reconnect, idle watchdog, and stats. |
+| `src/` | Original Arduino C++ LocoNet2 implementation (upstream reference). |
+| `examples/` | Original Arduino sketches for ESP32 / Pico / STM32 / Uno R4. |
+| `docs/SPECIFICATION_COMPLIANCE.md` | Feature matrix vs. the official LocoNet personal-edition spec. |
 
-## Configuration Variable (CV) Access
+## What's implemented in the .NET port
 
-The `LocoNetCVAccess` class provides support for reading and writing Configuration Variables (CVs) using peer-to-peer LocoNet messages. This is a common way for LocoNet devices to be configured.
+- **Wire layer** — `OpCode`, `LnConstants`, `LnMsg` (immutable frame value type
+  with checksum compute/verify), `LocoNetMessageBuffer` (byte-stream framer).
+- **Dispatch** — `LocoNetDispatcher` for fan-out to consumer callbacks with
+  opcode filtering.
+- **High-level helpers** — `LocoNetThrottle`, `LocoNetTurnout`,
+  `LocoNetFastClock`, `LocoNetCVAccess`, `LocoNetSystemVariable`,
+  `LongAckAwaiter`.
+- **Transports** —
+  - `LocoNetTcpClient`: raw binary LocoNet-over-TCP with **auto-reconnect**
+    (exponential backoff + jitter), per-attempt connect timeout, OS-level TCP
+    keepalives, idle-read watchdog, bounded TX queue with configurable
+    backpressure, TX rate cap, `StateChanged` / `Reconnected` events, and full
+    `LnConnectionStats`.
+  - `LocoNetJmriTcpClient`: JMRI ASCII `SEND` / `RECEIVE` wire format.
+- **JMRI line parser** — `JmriLineParser`.
 
-To use it, create an instance of `LocoNetCVAccess`, passing your `LocoNet` object to the constructor. Then, register callbacks for CV read and write requests:
+Track feature parity in
+[`docs/SPECIFICATION_COMPLIANCE.md`](docs/SPECIFICATION_COMPLIANCE.md).
 
-```cpp
-LocoNetCVAccess cvAccess(locoNet);
-cvAccess.onCvRead(myReadCallback);
-cvAccess.onCvWrite(myWriteCallback);
+## Quick start
+
+```pwsh
+# Build everything
+dotnet build dotnet/LocoNet.slnx
+
+# Run tests
+dotnet test dotnet/LocoNet.slnx
+
+# Connect to a LocoNet-over-TCP server and print received frames
+dotnet run --project dotnet/LocoNet.Net.Sample -- <host> <port>
 ```
 
-For a complete example, see the `CV-Access-ESP32` sketch in the `examples` directory.
+## Example: resilient client
 
-Developers:
-   Use of the supplied git pre-commit hook is encouraged.  This will require installation of the 'astyle' package for formatting source file.
-   See http://astyle.sourceforge.net for details on this package.
+```csharp
+using LocoNet.Net;
 
-   On Linux or Mac development machines, run the following command after you clone the repository:
+var options = new LocoNetTcpClientOptions
+{
+    InitialReconnectDelay = TimeSpan.FromMilliseconds(500),
+    MaxReconnectDelay     = TimeSpan.FromSeconds(15),
+    IdleReadWatchdog      = TimeSpan.FromSeconds(30),
+    EnableTcpKeepAlives   = true,
+    TxMessagesPerSecond   = 50,
+    Logger                = (level, msg, ex) => Console.WriteLine($"[{level}] {msg}"),
+};
 
-    	ln -s support/pre-commit .git/hooks/pre-commit
+await using var client = new LocoNetTcpClient("locobuffer.local", 1234, options);
 
-   Reformatting the source code to the preferred style is easy using astyle.  Just run:
-   
-   		astyle --options=.astylerc --suffix=none --recursive "*.h" "*.cpp" "*.ino"
+client.MessageReceived += (_, e) => Console.WriteLine($"RX {e.Message}");
+client.StateChanged    += (_, e) => Console.WriteLine($"{e.Previous} -> {e.Current}");
+client.Reconnected     += (_, e) => Console.WriteLine($"Reconnected (downtime {e.Downtime})");
+
+await client.ConnectAsync();
+```
+
+## Relationship to upstream
+
+This repository is a fork of [mrrwa/LocoNet2](https://github.com/mrrwa/LocoNet2)
+(itself a refactor of the original Arduino [LocoNet](https://github.com/mrrwa/LocoNet)
+library by Alex Shepherd, Stefan Bormann, Damian Philipp, John Plocher, et al.).
+The Arduino C++ sources under `src/` and `examples/` are kept in sync with
+upstream where possible; the `dotnet/` tree is new and lives only in this fork.
+
+## License
+
+Inherits the upstream LocoNet2 license. See the project files for details.

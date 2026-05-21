@@ -1,40 +1,57 @@
 # LocoNet.Net
 
-A managed .NET 10 port of the LocoNet2 protocol stack, designed for **LocoNet-over-TCP**
-(no Arduino, no native UART). Talk to a LocoBuffer-USB exposed by `ser2net`, an
-ESP32/Pico running this repo's firmware in bridge mode, or JMRI's LocoNetOverTcp server.
+Managed **.NET 10** implementation of the LocoNet protocol over TCP — see the
+[repository-level README](../README.md) for the overall picture.
 
-## Layout
+## Projects
 
 | Project | Purpose |
 | --- | --- |
-| `LocoNet.Net` | Class library: opcodes, message buffer, TCP client. |
-| `LocoNet.Net.Sample` | Console app that connects and prints every received frame. |
+| `LocoNet.Net` | Class library: opcodes, framing, dispatcher, throttle, fast clock, CV / SV access, JMRI parser, resilient TCP client. |
+| `LocoNet.Net.Tests` | xUnit suite — 133 tests including loopback TCP resilience tests. |
+| `LocoNet.Net.Sample` | Console demo exercising auto-reconnect, watchdog, and stats. |
 
-## Building
-
-```pwsh
-dotnet build dotnet/LocoNet.sln
-```
-
-## Running the sample
+## Build & test
 
 ```pwsh
-dotnet run --project dotnet/LocoNet.Net.Sample -- <host> <port>
+dotnet build LocoNet.slnx
+dotnet test  LocoNet.slnx
 ```
 
-## What is implemented so far
+## Run the sample
 
-- `OpCode` enum + length helper (`OpCodeExtensions.PacketSize`).
-- `LnConstants` — bit-mask and field constants from `src/ln_opc.h`.
-- `LnMsg` — immutable frame value type with checksum compute/verify.
-- `LocoNetMessageBuffer` — byte-stream framer ported from
-  [`src/LocoNetMessageBuffer.cpp`](../src/LocoNetMessageBuffer.cpp).
-- `LocoNetTcpClient` — raw-binary LocoNet-over-TCP client with read/write loops
-  exposed as events.
+```pwsh
+dotnet run --project LocoNet.Net.Sample -- <host> <port>
+```
 
-## Not yet ported
+The sample subscribes to `MessageReceived`, `StateChanged`, and `Reconnected`,
+sends a `GpOn` (global power on), and prints `LnConnectionStats` every 10 s.
 
-Higher-level helpers — Throttle, Turnout, FastClock, CV access, SV access — and the
-JMRI ASCII `SEND`/`RECEIVE` wire format. Track progress against
-[`docs/SPECIFICATION_COMPLIANCE.md`](../docs/SPECIFICATION_COMPLIANCE.md).
+## `LocoNetTcpClient` resilience features
+
+Configured via `LocoNetTcpClientOptions`:
+
+- **Auto-reconnect** with exponential backoff + jitter (`InitialReconnectDelay`,
+  `MaxReconnectDelay`, `ReconnectJitter`, `MaxReconnectAttempts`).
+- **Per-attempt connect timeout** (`ConnectTimeout`, default 10 s).
+- **OS TCP keepalives** (`EnableTcpKeepAlives`, `TcpKeepAliveTime`,
+  `TcpKeepAliveInterval`, `TcpKeepAliveRetryCount`).
+- **App-level idle-read watchdog** (`IdleReadWatchdog`) to catch half-open
+  sockets that keepalives miss.
+- **Bounded TX queue** with configurable backpressure policy (`TxQueueCapacity`,
+  `TxFullMode`).
+- **Disconnect TX policy** — discard or throw (`DisconnectBehavior`). Pending
+  frames are **always** dropped across a reconnect, by design.
+- **TX rate cap** (`TxMessagesPerSecond`).
+- **Events** — `MessageReceived`, `Disconnected`, `StateChanged`, `Reconnected`.
+- **Stats** — `RxStats`, `TxStats`, and `ConnectionStats` (`Connects`,
+  `Reconnects`, `FailedAttempts`, `Drops`, `IdleWatchdogTrips`,
+  `TxDiscardedWhileDisconnected`, `TxDroppedByBackpressure`, `LastRxUtc`,
+  `LastTxUtc`, `LastError`).
+- **Logging hook** — `Logger` delegate (`LocoNetLogLevel`).
+
+## Feature parity
+
+See [`docs/SPECIFICATION_COMPLIANCE.md`](../docs/SPECIFICATION_COMPLIANCE.md)
+for the .NET implementation matrix against the LocoNet personal-edition
+specification.
