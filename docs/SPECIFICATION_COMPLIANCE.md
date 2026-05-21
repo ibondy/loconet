@@ -62,3 +62,23 @@ This document tracks the implementation status of the LocoNet specification in t
 |---|---|---|---|
 | 0xB4 | OPC_LONG_ACK | Yes | `makeLongAck` function exists, but no explicit dispatcher handler. |
 | 0xB3 | OPC_UNKNOWN | Yes | Generic handling for unknown opcodes. |
+
+## .NET Port Changelog
+
+The `dotnet/` folder contains a `.NET 10` port of the library (`LocoNet.Net`) that targets LocoNet-over-TCP transports
+(raw-binary and JMRI ASCII) rather than the Arduino UART pathways. The port mirrors the C++ feature set documented
+above; the following audit-pass changes were applied to bring it to parity and fix latent bugs:
+
+| Area | Change | Status |
+|---|---|---|
+| `OpCode` enum | Removed duplicate `AnalogIo = 0xE5` (kept `PeerXfer`); both share the byte in `ln_opc.h` and are disambiguated by the message body. | Fixed |
+| `LocoNetThrottle.SetSpeed` | Defer condition corrected to `speed > 1 || _ticksSinceLastAction == 0` to mirror C++ `!_ticksSinceLastAction`. | Fixed |
+| `LocoNetFastClock` | `WR_SL_DATA` rollover frame now passes 13 payload bytes (was 14) so `LnMsg.FromPayload` no longer throws. | Fixed |
+| `LocoNetDispatcher` | Added `MultiSenseDeviceInfo` and `MultiSenseTransponder` events with decoding for `OPC_MULTI_SENSE` board ID, zone, board address, and loco fields. | Added |
+| `SvPeerData.Encode` | Preserves the high nibble of the PXCT prefix bytes (`svx1`/`svx2`), required for SV peer-transfer replies to be accepted by the receiver. | Fixed |
+
+The .NET port currently surfaces the following high-level features as native CLR APIs:
+`LocoNetThrottle`, `LocoNetTurnout`, `LocoNetFastClock`, `LocoNetSystemVariable` (LNSV1/2),
+`LocoNetCV` (LNSV1 helper), `LocoNetCVAccess` (LNCV), `LocoNetDispatcher` (sensors, switches, power,
+multi-sense), `LongAckAwaiter` (request/response correlation), and TCP transports for both raw-binary and
+JMRI ASCII framing. Coverage is verified by 104 xUnit tests in `LocoNet.Net.Tests`.

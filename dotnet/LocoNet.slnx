@@ -1,0 +1,5 @@
+<Solution>
+  <Project Path="LocoNet.Net.Sample/LocoNet.Net.Sample.csproj" />
+  <Project Path="LocoNet.Net.Tests/LocoNet.Net.Tests.csproj" />
+  <Project Path="LocoNet.Net/LocoNet.Net.csproj" />
+</Solution>
