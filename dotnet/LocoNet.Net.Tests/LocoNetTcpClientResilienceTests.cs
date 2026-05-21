@@ -119,6 +119,8 @@ public class LocoNetTcpClientResilienceTests
             var args = await reconnects.Task.WaitAsync(TimeSpan.FromSeconds(5));
 
             Assert.Equal(1, args.ReconnectCount);
+            Assert.True(args.Downtime >= TimeSpan.FromMilliseconds(40),
+                $"downtime {args.Downtime} should include the reconnect backoff");
             Assert.True(client.ConnectionStats.Reconnects >= 1);
             Assert.True(client.ConnectionStats.Drops >= 1);
         }

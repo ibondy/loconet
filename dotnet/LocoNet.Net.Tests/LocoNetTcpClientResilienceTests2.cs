@@ -248,6 +248,43 @@ public class LocoNetTcpClientResilienceTests2
         finally { listener.Stop(); }
     }
 
+    [TestMethod]
+    public async Task ConcurrentConnect_AllowsOnlyOneStart()
+    {
+        var (listener, port) = StartListener();
+        try
+        {
+            await using var client = new LocoNetTcpClient("127.0.0.1", port, new LocoNetTcpClientOptions
+            {
+                MaxReconnectAttempts = 0,
+            });
+
+            Task first = client.ConnectAsync();
+            Task second = client.ConnectAsync();
+            using var server = await listener.AcceptTcpClientAsync().WaitAsync(TimeSpan.FromSeconds(5));
+
+            int successfulStarts = 0;
+            int invalidOperationFailures = 0;
+            foreach (Task task in new[] { first, second })
+            {
+                try
+                {
+                    await task;
+                    successfulStarts++;
+                }
+                catch (InvalidOperationException)
+                {
+                    invalidOperationFailures++;
+                }
+            }
+
+            Assert.Equal(1, successfulStarts);
+            Assert.Equal(1, invalidOperationFailures);
+            Assert.Equal(1, client.ConnectionStats.Connects);
+        }
+        finally { listener.Stop(); }
+    }
+
     // 8. A throwing MessageReceived handler does not kill the supervisor — subsequent frames still arrive.
     [TestMethod]
     public async Task ThrowingMessageHandler_DoesNotKillSupervisor()

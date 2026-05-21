@@ -51,6 +51,8 @@ public sealed class LocoNetTcpClient : ILocoNet, IAsyncDisposable, IDisposable
     private Task? _supervisor;
     private ConnectionState _state = ConnectionState.Disconnected;
     private long _lastRxTicks; // DateTime.UtcNow.Ticks; 0 = not yet
+    private DateTime? _disconnectedSinceUtc;
+    private bool _started;
     private bool _disposed;
 
     public LocoNetTcpClient(string host, int port)
@@ -105,10 +107,11 @@ public sealed class LocoNetTcpClient : ILocoNet, IAsyncDisposable, IDisposable
         ObjectDisposedException.ThrowIf(_disposed, this);
         lock (_stateGate)
         {
-            if (_supervisor is not null)
+            if (_started)
             {
                 throw new InvalidOperationException("Already started.");
             }
+            _started = true;
         }
 
         // First connect runs inline so callers see a SocketException/TimeoutException
@@ -197,13 +200,14 @@ public sealed class LocoNetTcpClient : ILocoNet, IAsyncDisposable, IDisposable
             try { await Task.Delay(delay, ct).ConfigureAwait(false); }
             catch (OperationCanceledException) { return; }
 
-            var disconnectStartUtc = DateTime.UtcNow;
             try
             {
+                DateTime disconnectStartUtc = _disconnectedSinceUtc ?? DateTime.UtcNow;
                 await ConnectOnceAsync(ct).ConfigureAwait(false);
                 attempt = 0;
                 ConnectionStats.Reconnects++;
                 var downtime = DateTime.UtcNow - disconnectStartUtc;
+                _disconnectedSinceUtc = null;
                 SafeRaiseReconnected(new ReconnectedEventArgs(ConnectionStats.Reconnects, downtime));
                 await RunSessionAsync(ct).ConfigureAwait(false);
             }
@@ -248,6 +252,7 @@ public sealed class LocoNetTcpClient : ILocoNet, IAsyncDisposable, IDisposable
             _stream = client.GetStream();
             Volatile.Write(ref _lastRxTicks, DateTime.UtcNow.Ticks);
             ConnectionStats.Connects++;
+            _disconnectedSinceUtc = null;
             TransitionState(ConnectionState.Connected, null);
             Log(LocoNetLogLevel.Info, $"Connected to {_host}:{_port}", null);
         }
@@ -286,6 +291,7 @@ public sealed class LocoNetTcpClient : ILocoNet, IAsyncDisposable, IDisposable
 
         if (failure is OperationCanceledException) failure = null;
         if (failure is not null) ConnectionStats.LastError = failure;
+        _disconnectedSinceUtc = DateTime.UtcNow;
         ConnectionStats.Drops++;
         SafeRaiseDisconnected(failure);
         TransitionState(ConnectionState.Reconnecting, failure);
