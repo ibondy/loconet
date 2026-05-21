@@ -15,7 +15,7 @@ Arduino library. The original C++ sources are kept under [`src/`](src/) and
 | Project | Purpose |
 | --- | --- |
 | `LocoNet.Net` | Class library: opcodes, framing, dispatcher, throttle, fast clock, CV / SV access, JMRI parser, resilient TCP client. |
-| `LocoNet.Net.Tests` | xUnit suite — 133 tests including loopback TCP resilience tests. |
+| `LocoNet.Net.Tests` | MSTest suite — 133 tests including loopback TCP resilience tests. |
 | `LocoNet.Net.Sample` | Console demo exercising auto-reconnect, watchdog, and stats. |
 
 ## Build & test
