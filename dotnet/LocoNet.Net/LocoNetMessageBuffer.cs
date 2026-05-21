@@ -8,7 +8,7 @@ namespace LocoNet.Net;
 /// returned. Invalid frames are discarded and counted in <see cref="Stats"/>.
 /// </summary>
 /// <remarks>
-/// Ported from <c>src/LocoNetMessageBuffer.cpp</c>. Not thread-safe.
+/// Not thread-safe.
 /// </remarks>
 public sealed class LocoNetMessageBuffer
 {

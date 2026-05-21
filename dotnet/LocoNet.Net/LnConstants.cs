@@ -1,7 +1,7 @@
 namespace LocoNet.Net;
 
 /// <summary>
-/// Bit-mask and field constants ported from <c>src/ln_opc.h</c>.
+/// Bit-mask and field constants from the LocoNet protocol definitions.
 /// </summary>
 public static class LnConstants
 {

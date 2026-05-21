@@ -3,7 +3,7 @@ using System;
 namespace LocoNet.Net;
 
 /// <summary>
-/// A single LocoNet turnout. Mirrors <c>src/LocoNetTurnout.cpp</c>: send-only helper
+/// A single LocoNet turnout. Send-only helper
 /// that emits <c>OPC_SW_REQ</c> messages for the configured 1-based address.
 /// </summary>
 public sealed class LocoNetTurnout

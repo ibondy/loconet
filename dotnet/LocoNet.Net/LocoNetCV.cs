@@ -6,7 +6,7 @@ namespace LocoNet.Net;
 /// High-level LNCV configuration helper: handles discovery, programming start/stop, and
 /// delegates CV reads/writes to <see cref="LocoNetCVAccess"/>.
 /// </summary>
-/// <remarks>Port of <c>src/LocoNetCV.cpp</c>.</remarks>
+/// <remarks>Managed port of the original LocoNet2 LNCV helper.</remarks>
 public sealed class LocoNetCV : IDisposable
 {
     private readonly ILocoNet _locoNet;

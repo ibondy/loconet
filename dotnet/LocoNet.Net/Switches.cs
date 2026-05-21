@@ -7,7 +7,7 @@ namespace LocoNet.Net;
 /// (<c>OPC_SW_REQ</c>, <c>OPC_SW_REP</c>, <c>OPC_SW_STATE</c>, <c>OPC_INPUT_REP</c>,
 /// <c>OPC_GPON</c>, <c>OPC_GPOFF</c>).
 /// </summary>
-/// <remarks>Ported from the standalone helpers in <c>src/LocoNet2.cpp</c>.</remarks>
+/// <remarks>Managed port of the original LocoNet2 standalone switch helpers.</remarks>
 public static class Switches
 {
     /// <summary>

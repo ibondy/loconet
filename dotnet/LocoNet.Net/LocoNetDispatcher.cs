@@ -6,7 +6,7 @@ namespace LocoNet.Net;
 /// Higher-level event dispatcher: subscribes to an <see cref="ILocoNet"/> and re-emits
 /// strongly-typed events for the most common message kinds (switch / sensor / power).
 /// </summary>
-/// <remarks>Port of the event surface in <c>LocoNetDispatcher</c> from <c>src/LocoNet2.cpp</c>.</remarks>
+/// <remarks>Managed port of the original LocoNet2 dispatcher event surface.</remarks>
 public sealed class LocoNetDispatcher : IDisposable
 {
     private readonly ILocoNet _locoNet;

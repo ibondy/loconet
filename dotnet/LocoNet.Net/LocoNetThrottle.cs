@@ -7,7 +7,7 @@ namespace LocoNet.Net;
 /// release plus speed, direction and function control.
 /// </summary>
 /// <remarks>
-/// Port of <c>src/LocoNetThrottle.cpp</c>. Drive the periodic <see cref="Process100msActions"/>
+/// Managed port of the original LocoNet2 throttle helper. Drive the periodic <see cref="Process100msActions"/>
 /// from a 100 ms timer in your application to keep the slot refreshed and to flush deferred
 /// speed updates.
 /// </remarks>

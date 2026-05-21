@@ -7,7 +7,7 @@ namespace LocoNet.Net;
 /// keeps a local copy in sync, and ticks forward between updates.
 /// </summary>
 /// <remarks>
-/// Port of <c>src/LocoNetFastClock.cpp</c>. Drive <see cref="Process66msActions"/> from a
+/// Managed port of the original LocoNet2 fast-clock helper. Drive <see cref="Process66msActions"/> from a
 /// 65 ms timer; the algorithm assumes a 65 ms tick rate.
 /// </remarks>
 public sealed class LocoNetFastClock : IDisposable

@@ -1,8 +1,8 @@
-# Ignore special file to allow editing of Arduino Library Examples
-.development
-
-#astyle original files
-*.orig
+# Local editor and build artifacts
+.vscode/
+.vs/
+*.user
+*.suo
 
 # Compiled Object files
 *.slo
@@ -35,7 +35,9 @@
 
 .tags
 
-.pioenvs
-.piolibdeps
-.vscode
-.pio/
+# .NET build and test output
+bin/
+obj/
+TestResults/
+coverage.cobertura.xml
+*.coverage

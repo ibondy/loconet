@@ -8,7 +8,7 @@ namespace LocoNet.Net;
 /// <c>WRITE_QUAD</c>, <c>READ_QUAD</c>, <c>DISCOVER</c>, <c>IDENTIFY</c>,
 /// <c>CHANGE_ADDRESS</c>, and <c>RECONFIGURE</c>.
 /// </summary>
-/// <remarks>Port of <c>src/LocoNetSystemVariable.cpp</c>.</remarks>
+/// <remarks>Managed port of the original LocoNet2 system-variable helper.</remarks>
 public sealed class LocoNetSystemVariable : IDisposable
 {
     private readonly ILocoNet _locoNet;

@@ -8,7 +8,7 @@ namespace LocoNet.Net;
 /// <remarks>
 /// Negative values suppress sending any reply. Zero is "OK" (a response message is sent).
 /// Positive values trigger a long-ACK reply containing that value as the error code.
-/// Matches the <c>int8_t</c> return convention of <c>LocoNetCVAccess</c> in C++.
+/// Matches the original LocoNet2 signed-byte return convention.
 /// </remarks>
 public enum LncvResult : sbyte
 {
@@ -31,7 +31,7 @@ public enum LncvResult : sbyte
 /// Implements the request side of LNCV by parsing CFG_READ / CFG_WRITE messages and invoking
 /// user callbacks.
 /// </summary>
-/// <remarks>Port of <c>src/LocoNetCVAccess.cpp</c>.</remarks>
+/// <remarks>Managed port of the original LocoNet2 LNCV access helper.</remarks>
 public sealed class LocoNetCVAccess : IDisposable
 {
     private readonly ILocoNet _locoNet;
