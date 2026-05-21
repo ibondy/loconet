@@ -1,11 +1,12 @@
 using System;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace LocoNet.Net.Tests;
 
+[TestClass]
 public class LnMsgTests
 {
-    [Fact]
+    [TestMethod]
     public void FromPayload_AppendsCorrectChecksum()
     {
         // OPC_GPON = 0x83, no payload bytes => 2 bytes total (opcode + checksum).
@@ -17,7 +18,7 @@ public class LnMsgTests
         Assert.Equal(0x7C, msg[1]);
     }
 
-    [Fact]
+    [TestMethod]
     public void FromBytes_RoundTrips_FromPayload()
     {
         var built = LnMsg.Make(OpCode.LocoSpd, 0x12, 0x34);
@@ -25,21 +26,21 @@ public class LnMsgTests
         Assert.Equal(built, parsed);
     }
 
-    [Fact]
+    [TestMethod]
     public void FromBytes_RejectsBadChecksum()
     {
         var buf = new byte[] { (byte)OpCode.GpOn, 0x00 }; // wrong checksum
         Assert.Throws<ArgumentException>(() => LnMsg.FromBytes(buf));
     }
 
-    [Fact]
+    [TestMethod]
     public void FromBytes_RejectsNonOpcodeFirstByte()
     {
         var buf = new byte[] { 0x12, 0x34 };
         Assert.Throws<ArgumentException>(() => LnMsg.FromBytes(buf));
     }
 
-    [Fact]
+    [TestMethod]
     public void MakeLongAck_StripsHighBitOnReplyOpcode()
     {
         var ack = LnMsg.MakeLongAck(replyToOpc: (byte)OpCode.PeerXfer, ack: 0x7F);
@@ -48,7 +49,7 @@ public class LnMsgTests
         Assert.Equal(0x7F, ack[2]);
     }
 
-    [Fact]
+    [TestMethod]
     public void ComputeChecksum_MatchesManualXor()
     {
         byte[] payload = { 0xB4, 0x6D, 0x01 };
@@ -57,7 +58,7 @@ public class LnMsgTests
         Assert.Equal(expected, LnMsg.ComputeChecksum(payload));
     }
 
-    [Fact]
+    [TestMethod]
     public void FromBytes_RejectsVariableOpcodeWithBufferShorterThanDeclaredSize()
     {
         // OPC_PEER_XFER (0xE5) declares its own length in byte [1]. Frame says 16 bytes but we
@@ -70,7 +71,7 @@ public class LnMsgTests
         Assert.Throws<ArgumentException>(() => LnMsg.FromBytes(buf));
     }
 
-    [Fact]
+    [TestMethod]
     public void FromPayload_RejectsPayloadLengthInconsistentWithOpcode()
     {
         // OPC_GPON is a 2-byte (fixed) message. Pass a 4-byte-style payload → mismatch.

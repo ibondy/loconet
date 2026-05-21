@@ -1,11 +1,12 @@
 using LocoNet.Net;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace LocoNet.Net.Tests;
 
+[TestClass]
 public class LocoNetCVTests
 {
-    [Fact]
+    [TestMethod]
     public void Discovery_OkResult_SendsResponse()
     {
         var ln = new FakeLocoNet();
@@ -26,7 +27,7 @@ public class LocoNetCVTests
         Assert.Equal(0x4567, LncvMessage.LncvValue(resp));
     }
 
-    [Fact]
+    [TestMethod]
     public void Discovery_NoCallback_SendsNothing()
     {
         var ln = new FakeLocoNet();
@@ -36,7 +37,7 @@ public class LocoNetCVTests
         Assert.Empty(ln.Sent);
     }
 
-    [Fact]
+    [TestMethod]
     public void ProgrammingStart_OkResult_SendsResponse()
     {
         var ln = new FakeLocoNet();
@@ -55,7 +56,7 @@ public class LocoNetCVTests
         Assert.Equal(LncvMessage.FlagProgOn, LncvMessage.Flags(resp));
     }
 
-    [Fact]
+    [TestMethod]
     public void ProgrammingStop_InvokesCallback_NoSend()
     {
         var ln = new FakeLocoNet();

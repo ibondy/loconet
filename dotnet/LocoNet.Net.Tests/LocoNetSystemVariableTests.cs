@@ -1,8 +1,9 @@
 using LocoNet.Net;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace LocoNet.Net.Tests;
 
+[TestClass]
 public class LocoNetSystemVariableTests
 {
     private const byte MfgId = 13;
@@ -66,7 +67,7 @@ public class LocoNetSystemVariableTests
         }
     }
 
-    [Fact]
+    [TestMethod]
     public void ReadSingle_ReturnsStoredByte()
     {
         var (ln, st, sv) = MakeServer();
@@ -86,7 +87,7 @@ public class LocoNetSystemVariableTests
         Assert.Equal(0xAB, data[4]);
     }
 
-    [Fact]
+    [TestMethod]
     public void WriteSingle_StoresValueAndRepliesWithReadback()
     {
         var (ln, st, sv) = MakeServer();
@@ -98,7 +99,7 @@ public class LocoNetSystemVariableTests
         Assert.Equal(0x55, data[4]);
     }
 
-    [Fact]
+    [TestMethod]
     public void WriteMasked_ChangesOnlyBitsInMask()
     {
         var (ln, st, sv) = MakeServer();
@@ -110,7 +111,7 @@ public class LocoNetSystemVariableTests
         Assert.Equal(0b1010_1111, st.Read(SvAddr.UserBase));
     }
 
-    [Fact]
+    [TestMethod]
     public void WriteQuad_StoresFourBytes()
     {
         var (ln, st, sv) = MakeServer();
@@ -123,7 +124,7 @@ public class LocoNetSystemVariableTests
         Assert.Equal(4, st.Read(SvAddr.UserBase + 3));
     }
 
-    [Fact]
+    [TestMethod]
     public void ReadSingle_OutOfRange_SendsLongAck42()
     {
         var (ln, _, sv) = MakeServer();
@@ -135,7 +136,7 @@ public class LocoNetSystemVariableTests
         Assert.Equal(42, resp[2]);
     }
 
-    [Fact]
+    [TestMethod]
     public void Discover_RequiresDeferredProcessing()
     {
         var (ln, _, sv) = MakeServer();
@@ -149,7 +150,7 @@ public class LocoNetSystemVariableTests
         Assert.Equal(0x40 | (byte)SvCommand.Discover, resp[3]);
     }
 
-    [Fact]
+    [TestMethod]
     public void Identify_FillsMfgDevProductSerial()
     {
         var (ln, st, sv) = MakeServer(nodeId: 0xCAFE);
@@ -170,7 +171,7 @@ public class LocoNetSystemVariableTests
         Assert.Equal(0x43, data[7]);
     }
 
-    [Fact]
+    [TestMethod]
     public void ChangeAddress_MatchingMfgDevSerial_UpdatesNodeId()
     {
         var (ln, st, sv) = MakeServer(nodeId: 0x0001);
@@ -185,7 +186,7 @@ public class LocoNetSystemVariableTests
         Assert.Single(ln.Sent); // a reply
     }
 
-    [Fact]
+    [TestMethod]
     public void ChangeAddress_WrongMfg_NotConsumed()
     {
         var (ln, _, sv) = MakeServer();
@@ -195,7 +196,7 @@ public class LocoNetSystemVariableTests
         Assert.Empty(ln.Sent);
     }
 
-    [Fact]
+    [TestMethod]
     public void Reconfigure_RaisesEventAfterReply()
     {
         var (ln, _, sv) = MakeServer();
@@ -206,7 +207,7 @@ public class LocoNetSystemVariableTests
         Assert.Equal(1, calls);
     }
 
-    [Fact]
+    [TestMethod]
     public void WrongDestinationId_NotConsumed()
     {
         var (ln, _, sv) = MakeServer(nodeId: 0x1111);
@@ -214,7 +215,7 @@ public class LocoNetSystemVariableTests
         Assert.Empty(ln.Sent);
     }
 
-    [Fact]
+    [TestMethod]
     public void WriteStorage_RaisesSvChanged()
     {
         var (_, _, sv) = MakeServer();

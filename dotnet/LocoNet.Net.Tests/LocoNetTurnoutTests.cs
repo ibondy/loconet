@@ -1,14 +1,15 @@
 using LocoNet.Net;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace LocoNet.Net.Tests;
 
+[TestClass]
 public class LocoNetTurnoutTests
 {
-    [Theory]
-    [InlineData((ushort)1, true)]
-    [InlineData((ushort)1, false)]
-    [InlineData((ushort)2048, true)]
+    [TestMethod]
+    [DataRow((ushort)1, true)]
+    [DataRow((ushort)1, false)]
+    [DataRow((ushort)2048, true)]
     public void SetState_SendsSwReqWithOutputAndAddress(ushort address, bool thrown)
     {
         var ln = new FakeLocoNet();

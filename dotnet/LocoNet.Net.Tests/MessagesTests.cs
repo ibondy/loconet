@@ -1,11 +1,12 @@
 using LocoNet.Net;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace LocoNet.Net.Tests;
 
+[TestClass]
 public class MessagesTests
 {
-    [Fact]
+    [TestMethod]
     public void SlotDataMsg_AddressCombination()
     {
         Span<byte> payload = stackalloc byte[13];
@@ -24,7 +25,7 @@ public class MessagesTests
         Assert.Equal(5, sd.Slot);
     }
 
-    [Fact]
+    [TestMethod]
     public void SlotDataMsg_ToWrSlData_RebuildsWithOverridesAndChecksum()
     {
         Span<byte> payload = stackalloc byte[13];
@@ -48,7 +49,7 @@ public class MessagesTests
         Assert.Equal(0x01, wr[9]);
     }
 
-    [Fact]
+    [TestMethod]
     public void LocoDataMsg_RejectsWrongLength()
     {
         // GpOn (0x83) is a 2-byte message; LocoDataMsg expects 14 bytes.
@@ -58,7 +59,7 @@ public class MessagesTests
         Assert.Throws<ArgumentException>(() => new LocoDataMsg(two));
     }
 
-    [Fact]
+    [TestMethod]
     public void LongAckMsg_ExposesOpcodeAndAck()
     {
         var lack = LnMsg.MakeLongAck((byte)OpCode.LocoAdr, 0x55);
@@ -67,7 +68,7 @@ public class MessagesTests
         Assert.Equal(0x55, m.Ack);
     }
 
-    [Fact]
+    [TestMethod]
     public void SlotDataMsg_RejectsWrongOpcode()
     {
         // OPC_GPON is a 2-byte message — wrong opcode and wrong length for slot data.
@@ -75,7 +76,7 @@ public class MessagesTests
         Assert.Throws<ArgumentException>(() => new SlotDataMsg(bad));
     }
 
-    [Fact]
+    [TestMethod]
     public void LongAckMsg_RejectsWrongOpcode()
     {
         var bad = LnMsg.Make(OpCode.LocoSpd, 0x00, 0x00);

@@ -1,11 +1,12 @@
 using LocoNet.Net;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace LocoNet.Net.Tests;
 
+[TestClass]
 public class LocoNetCVAccessTests
 {
-    [Fact]
+    [TestMethod]
     public void CfgRead_OkResult_SendsResponse()
     {
         var ln = new FakeLocoNet();
@@ -25,7 +26,7 @@ public class LocoNetCVAccessTests
         Assert.Equal(20, LncvMessage.LncvValue(resp));
     }
 
-    [Fact]
+    [TestMethod]
     public void CfgRead_PositiveErrorCode_SendsLongAck()
     {
         var ln = new FakeLocoNet();
@@ -41,7 +42,7 @@ public class LocoNetCVAccessTests
         Assert.Equal((byte)LncvResult.Unsupported, resp[2]);
     }
 
-    [Fact]
+    [TestMethod]
     public void CfgRead_NoReplyResult_SendsNothing()
     {
         var ln = new FakeLocoNet();
@@ -53,7 +54,7 @@ public class LocoNetCVAccessTests
         Assert.Empty(ln.Sent);
     }
 
-    [Fact]
+    [TestMethod]
     public void CfgWrite_OkResult_SendsLongAck()
     {
         var ln = new FakeLocoNet();

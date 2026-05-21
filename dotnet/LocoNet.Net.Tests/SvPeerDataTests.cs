@@ -1,10 +1,11 @@
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace LocoNet.Net.Tests;
 
+[TestClass]
 public class SvPeerDataTests
 {
-    [Fact]
+    [TestMethod]
     public void EncodeDecode_RoundTrips_AllHighBits()
     {
         // Data with every high bit set so PXCT must carry all 8 bits across both groups.
@@ -27,7 +28,7 @@ public class SvPeerDataTests
         Assert.Equal(data, decoded);
     }
 
-    [Fact]
+    [TestMethod]
     public void EncodeDecode_RoundTrips_NoHighBits()
     {
         byte[] data = { 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08 };
@@ -42,7 +43,7 @@ public class SvPeerDataTests
         Assert.Equal(data, decoded);
     }
 
-    [Fact]
+    [TestMethod]
     public void EncodeDecode_RoundTrips_MixedHighBits()
     {
         byte[] data = { 0x01, 0x82, 0x03, 0x84, 0x85, 0x06, 0x87, 0x08 };

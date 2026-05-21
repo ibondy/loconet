@@ -1,11 +1,12 @@
 using LocoNet.Net;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace LocoNet.Net.Tests;
 
+[TestClass]
 public class LocoNetDispatcherTests
 {
-    [Fact]
+    [TestMethod]
     public void SensorChanged_FiresOnInputRep()
     {
         var ln = new FakeLocoNet();
@@ -23,7 +24,7 @@ public class LocoNetDispatcherTests
         Assert.True(gotHi);
     }
 
-    [Fact]
+    [TestMethod]
     public void SwitchRequested_FiresOnSwReq()
     {
         var ln = new FakeLocoNet();
@@ -38,7 +39,7 @@ public class LocoNetDispatcherTests
         Assert.False(gotDir); // thrown=true → DIR bit clear
     }
 
-    [Fact]
+    [TestMethod]
     public void SwitchStateReported_FiresOnSwState()
     {
         var ln = new FakeLocoNet();
@@ -52,7 +53,7 @@ public class LocoNetDispatcherTests
         Assert.Equal((ushort)7, gotAddr);
     }
 
-    [Fact]
+    [TestMethod]
     public void PowerChanged_FiresOnGpOnAndGpOff()
     {
         var ln = new FakeLocoNet();
@@ -68,7 +69,7 @@ public class LocoNetDispatcherTests
         Assert.Equal(new[] { true, false }, values);
     }
 
-    [Fact]
+    [TestMethod]
     public void MultiSenseTransponder_FiresOnPresent()
     {
         var ln = new FakeLocoNet();
@@ -103,7 +104,7 @@ public class LocoNetDispatcherTests
         Assert.True(gotPresent);
     }
 
-    [Fact]
+    [TestMethod]
     public void MultiSenseDeviceInfo_FiresFourTimes()
     {
         var ln = new FakeLocoNet();
@@ -120,7 +121,7 @@ public class LocoNetDispatcherTests
         Assert.Equal(4, calls);
     }
 
-    [Fact]
+    [TestMethod]
     public void Busy81_IsSilentlyIgnored()
     {
         // Spec: <81><7E> is a NOP "time burner" emitted by the master. Dispatcher must not
@@ -140,7 +141,7 @@ public class LocoNetDispatcherTests
         Assert.Equal(0, sensor + sw + power + ms);
     }
 
-    [Fact]
+    [TestMethod]
     public void MultiSenseTransponder_AbsentFiresWithPresentFalse()
     {
         var ln = new FakeLocoNet();

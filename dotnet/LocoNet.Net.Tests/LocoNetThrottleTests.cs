@@ -1,8 +1,9 @@
 using LocoNet.Net;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace LocoNet.Net.Tests;
 
+[TestClass]
 public class LocoNetThrottleTests
 {
     private static LnMsg BuildSlotData(byte slot, ushort address, byte speed = 0, byte dirf = 0, byte stat = 0, ushort throttleId = 0)
@@ -24,7 +25,7 @@ public class LocoNetThrottleTests
         return LnMsg.FromPayload(payload);
     }
 
-    [Fact]
+    [TestMethod]
     public void SetAddress_FreeState_SendsLocoAdrAndTransitions()
     {
         var ln = new FakeLocoNet();
@@ -39,7 +40,7 @@ public class LocoNetThrottleTests
         Assert.Equal(1234 & 0x7F, sent[2]);
     }
 
-    [Fact]
+    [TestMethod]
     public void SetAddress_Busy_FiresError()
     {
         var ln = new FakeLocoNet();
@@ -52,7 +53,7 @@ public class LocoNetThrottleTests
         Assert.Equal(ThrottleError.Busy, err);
     }
 
-    [Fact]
+    [TestMethod]
     public void SlotResponse_AfterSelect_TriggersMoveSlots()
     {
         var ln = new FakeLocoNet();
@@ -71,7 +72,7 @@ public class LocoNetThrottleTests
         Assert.Equal(5, sent[2]); // null move src==dst
     }
 
-    [Fact]
+    [TestMethod]
     public void SetSpeed_NotSelected_FailsNotSelected()
     {
         var ln = new FakeLocoNet();
@@ -79,7 +80,7 @@ public class LocoNetThrottleTests
         Assert.Equal(ThrottleError.NotSelected, th.SetSpeed(50));
     }
 
-    [Fact]
+    [TestMethod]
     public void GetFunction_F0_UsesBit4()
     {
         var ln = new FakeLocoNet();
@@ -99,7 +100,7 @@ public class LocoNetThrottleTests
         Assert.NotEqual(0, th.GetFunction(3));
     }
 
-    [Fact]
+    [TestMethod]
     public void AcquireAddress_FreeState_SendsNullMove()
     {
         var ln = new FakeLocoNet();
@@ -112,7 +113,7 @@ public class LocoNetThrottleTests
         Assert.Equal(ThrottleState.Acquire, th.State);
     }
 
-    [Fact]
+    [TestMethod]
     public void DispatchAddress_NoSlot_FailsNotSelected()
     {
         var ln = new FakeLocoNet();
@@ -120,7 +121,7 @@ public class LocoNetThrottleTests
         Assert.Equal(ThrottleError.NotSelected, th.DispatchAddress());
     }
 
-    [Fact]
+    [TestMethod]
     public void ReleaseAddress_Free_NoSend()
     {
         var ln = new FakeLocoNet();
@@ -130,7 +131,7 @@ public class LocoNetThrottleTests
         Assert.Equal(ThrottleState.Free, th.State);
     }
 
-    [Fact]
+    [TestMethod]
     public void LongAck_OnLocoAdr_FiresNoSlotsError()
     {
         var ln = new FakeLocoNet();
@@ -146,7 +147,7 @@ public class LocoNetThrottleTests
         Assert.Equal(ThrottleState.Free, th.State);
     }
 
-    [Fact]
+    [TestMethod]
     public void LongAck_OnMoveSlots_FiresNoLocoError()
     {
         var ln = new FakeLocoNet();
@@ -161,11 +162,11 @@ public class LocoNetThrottleTests
         Assert.Equal(ThrottleError.NoLoco, err);
     }
 
-    [Theory]
-    [InlineData((byte)0, (byte)1)] // API "stop" → wire 0x01 (EMERG STOP per spec swap)
-    [InlineData((byte)1, (byte)0)] // API "emerg stop" → wire 0x00
-    [InlineData((byte)50, (byte)50)]
-    [InlineData((byte)127, (byte)127)]
+    [TestMethod]
+    [DataRow((byte)0, (byte)1)] // API "stop" → wire 0x01 (EMERG STOP per spec swap)
+    [DataRow((byte)1, (byte)0)] // API "emerg stop" → wire 0x00
+    [DataRow((byte)50, (byte)50)]
+    [DataRow((byte)127, (byte)127)]
     public void SetSpeed_AppliesEStopSwapOnTheWire(byte apiSpeed, byte expectedWire)
     {
         var ln = new FakeLocoNet();
@@ -186,7 +187,7 @@ public class LocoNetThrottleTests
         Assert.Equal(expectedWire, sent[2]);
     }
 
-    [Fact]
+    [TestMethod]
     public void SetDirection_PreservesFunctionBits()
     {
         var ln = new FakeLocoNet();
@@ -207,7 +208,7 @@ public class LocoNetThrottleTests
         Assert.Equal((byte)(initialDirf | LnConstants.DirfDir), sent[2]);
     }
 
-    [Fact]
+    [TestMethod]
     public void DispatchAddress_FromInUse_SendsMoveToSlotZero()
     {
         var ln = new FakeLocoNet();

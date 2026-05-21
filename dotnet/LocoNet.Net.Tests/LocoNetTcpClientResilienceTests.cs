@@ -3,10 +3,11 @@ using System.Net;
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace LocoNet.Net.Tests;
 
+[TestClass]
 public class LocoNetTcpClientResilienceTests
 {
     private static (TcpListener listener, int port) StartListener()
@@ -16,7 +17,7 @@ public class LocoNetTcpClientResilienceTests
         return (listener, ((IPEndPoint)listener.LocalEndpoint).Port);
     }
 
-    [Fact]
+    [TestMethod]
     public async Task ConnectAsync_ReachesConnectedState_AndRaisesStateChanged()
     {
         var (listener, port) = StartListener();
@@ -50,7 +51,7 @@ public class LocoNetTcpClientResilienceTests
         }
     }
 
-    [Fact]
+    [TestMethod]
     public async Task ConnectAsync_UnreachablePeerWithNoReconnect_Throws()
     {
         // Port 1 is virtually always closed on Windows; use a short ConnectTimeout to keep the
@@ -65,7 +66,7 @@ public class LocoNetTcpClientResilienceTests
         Assert.Equal(1, client.ConnectionStats.FailedAttempts);
     }
 
-    [Fact]
+    [TestMethod]
     public async Task Send_WhenDisconnected_WithDiscardBehavior_IncrementsCounter()
     {
         await using var client = new LocoNetTcpClient("127.0.0.1", 1, new LocoNetTcpClientOptions
@@ -78,7 +79,7 @@ public class LocoNetTcpClientResilienceTests
         Assert.Equal(2ul, client.ConnectionStats.TxDiscardedWhileDisconnected);
     }
 
-    [Fact]
+    [TestMethod]
     public async Task Send_WhenDisconnected_WithThrowBehavior_Throws()
     {
         await using var client = new LocoNetTcpClient("127.0.0.1", 1, new LocoNetTcpClientOptions
@@ -89,7 +90,7 @@ public class LocoNetTcpClientResilienceTests
         Assert.Throws<InvalidOperationException>(() => client.Send(LnMsg.Make(OpCode.LocoSpd, 1, 1)));
     }
 
-    [Fact]
+    [TestMethod]
     public async Task PeerClose_TriggersReconnect_AndRaisesReconnectedEvent()
     {
         var (listener, port) = StartListener();
@@ -127,7 +128,7 @@ public class LocoNetTcpClientResilienceTests
         }
     }
 
-    [Fact]
+    [TestMethod]
     public async Task UnreachablePeer_WithBoundedRetries_TransitionsToFaulted()
     {
         await using var client = new LocoNetTcpClient("127.0.0.1", 1, new LocoNetTcpClientOptions
@@ -152,7 +153,7 @@ public class LocoNetTcpClientResilienceTests
         Assert.True(client.ConnectionStats.FailedAttempts >= 2);
     }
 
-    [Fact]
+    [TestMethod]
     public async Task SentMessage_AppearsOnTheWire()
     {
         var (listener, port) = StartListener();

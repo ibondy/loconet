@@ -1,11 +1,12 @@
 using LocoNet.Net;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace LocoNet.Net.Tests;
 
+[TestClass]
 public class LocoNetFastClockTests
 {
-    [Fact]
+    [TestMethod]
     public void Poll_SendsRqSlDataForFcSlot()
     {
         var ln = new FakeLocoNet();
@@ -18,7 +19,7 @@ public class LocoNetFastClockTests
         Assert.Equal(0, sent[2]);
     }
 
-    [Fact]
+    [TestMethod]
     public void Process66ms_FromIdle_SendsRequest()
     {
         var ln = new FakeLocoNet();
@@ -30,7 +31,7 @@ public class LocoNetFastClockTests
         Assert.Equal(LnConstants.FastClockSlot, sent[1]);
     }
 
-    [Fact]
+    [TestMethod]
     public void OnFcSlotData_RaisesUpdated()
     {
         var ln = new FakeLocoNet();
@@ -72,7 +73,7 @@ public class LocoNetFastClockTests
         Assert.True(sync);
     }
 
-    [Fact]
+    [TestMethod]
     public void RolloverWithCorrectDcs100_SendsWrSlData()
     {
         var ln = new FakeLocoNet();
@@ -109,7 +110,7 @@ public class LocoNetFastClockTests
         Assert.Equal(LnConstants.FastClockSlot, wr[2]);
     }
 
-    [Fact]
+    [TestMethod]
     public void DisabledClockCntrl_TransitionsToDisabled_NoUpdate()
     {
         var ln = new FakeLocoNet();

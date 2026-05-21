@@ -1,16 +1,17 @@
 using LocoNet.Net;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace LocoNet.Net.Tests;
 
+[TestClass]
 public class SwitchesTests
 {
-    [Theory]
-    [InlineData((ushort)1)]
-    [InlineData((ushort)2)]
-    [InlineData((ushort)128)]
-    [InlineData((ushort)1024)]
-    [InlineData((ushort)2048)]
+    [TestMethod]
+    [DataRow((ushort)1)]
+    [DataRow((ushort)2)]
+    [DataRow((ushort)128)]
+    [DataRow((ushort)1024)]
+    [DataRow((ushort)2048)]
     public void MakeSwitchRequest_RoundTrip(ushort address)
     {
         var on  = Switches.MakeSwitchRequest(address, output: true,  thrown: true);
@@ -31,7 +32,7 @@ public class SwitchesTests
         Assert.True(dirOff);
     }
 
-    [Fact]
+    [TestMethod]
     public void RequestSwitch_SendsThroughTransport()
     {
         var ln = new FakeLocoNet();
@@ -43,7 +44,7 @@ public class SwitchesTests
         Assert.True(output);
     }
 
-    [Fact]
+    [TestMethod]
     public void ReportSwitch_SendsSwState()
     {
         var ln = new FakeLocoNet();
@@ -55,12 +56,12 @@ public class SwitchesTests
         Assert.Equal(200, addr);
     }
 
-    [Theory]
-    [InlineData((ushort)1, true)]
-    [InlineData((ushort)2, false)]
-    [InlineData((ushort)3, true)]
-    [InlineData((ushort)100, true)]
-    [InlineData((ushort)1024, false)]
+    [TestMethod]
+    [DataRow((ushort)1, true)]
+    [DataRow((ushort)2, false)]
+    [DataRow((ushort)3, true)]
+    [DataRow((ushort)100, true)]
+    [DataRow((ushort)1024, false)]
     public void ReportSensor_RoundTrip(ushort address, bool state)
     {
         var ln = new FakeLocoNet();
@@ -73,7 +74,7 @@ public class SwitchesTests
         Assert.Equal(state, decState);
     }
 
-    [Fact]
+    [TestMethod]
     public void ReportPower_OnAndOff()
     {
         var ln = new FakeLocoNet();
@@ -83,7 +84,7 @@ public class SwitchesTests
         Assert.Equal(OpCode.GpOff, ln.Sent[1].OpCode);
     }
 
-    [Fact]
+    [TestMethod]
     public void DecodeSwitchReport_ReturnsAddressAndBits()
     {
         // Build an OPC_SW_REP frame manually with address=5, HI=1, SW=1
@@ -98,9 +99,9 @@ public class SwitchesTests
         Assert.True(sw);
     }
 
-    [Theory]
-    [InlineData(false)] // output form: SW_REP_INPUTS bit (0x40) clear
-    [InlineData(true)]  // input form:  SW_REP_INPUTS bit (0x40) set
+    [TestMethod]
+    [DataRow(false)] // output form: SW_REP_INPUTS bit (0x40) clear
+    [DataRow(true)]  // input form:  SW_REP_INPUTS bit (0x40) set
     public void DecodeSwitchReport_CarriesInputFormBitInSw2(bool inputForm)
     {
         // SW2 bit 6 (0x40) distinguishes the two forms of OPC_SW_REP per spec; the decoder

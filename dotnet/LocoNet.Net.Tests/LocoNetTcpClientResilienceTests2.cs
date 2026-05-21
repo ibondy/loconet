@@ -5,10 +5,11 @@ using System.Net;
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace LocoNet.Net.Tests;
 
+[TestClass]
 public class LocoNetTcpClientResilienceTests2
 {
     private static (TcpListener listener, int port) StartListener()
@@ -19,7 +20,7 @@ public class LocoNetTcpClientResilienceTests2
     }
 
     // 1. Reconnected event MUST NOT fire on the first connect.
-    [Fact]
+    [TestMethod]
     public async Task FirstConnect_DoesNotRaiseReconnected()
     {
         var (listener, port) = StartListener();
@@ -44,7 +45,7 @@ public class LocoNetTcpClientResilienceTests2
     }
 
     // 2. Pending TX is dropped across a reconnect — the new server does not see stale frames.
-    [Fact]
+    [TestMethod]
     public async Task PendingTxIsDroppedAcrossReconnect()
     {
         var (listener, port) = StartListener();
@@ -89,7 +90,7 @@ public class LocoNetTcpClientResilienceTests2
     }
 
     // 3. Idle-read watchdog trips and triggers a reconnect.
-    [Fact]
+    [TestMethod]
     public async Task IdleReadWatchdog_TripsAndReconnects()
     {
         var (listener, port) = StartListener();
@@ -120,7 +121,7 @@ public class LocoNetTcpClientResilienceTests2
     }
 
     // 4. TX queue overflow increments TxDroppedByBackpressure.
-    [Fact]
+    [TestMethod]
     public async Task TxBackpressure_DropsExcessAndIncrementsCounter()
     {
         var (listener, port) = StartListener();
@@ -156,7 +157,7 @@ public class LocoNetTcpClientResilienceTests2
     }
 
     // 5. StateChanged transition sequence across a peer-close + reconnect.
-    [Fact]
+    [TestMethod]
     public async Task StateChanged_FollowsExpectedSequence()
     {
         var (listener, port) = StartListener();
@@ -206,7 +207,7 @@ public class LocoNetTcpClientResilienceTests2
     }
 
     // 6. DisposeAsync cancels the supervisor promptly.
-    [Fact]
+    [TestMethod]
     public async Task DisposeAsync_CancelsSupervisorPromptly()
     {
         var client = new LocoNetTcpClient("127.0.0.1", 1, new LocoNetTcpClientOptions
@@ -228,7 +229,7 @@ public class LocoNetTcpClientResilienceTests2
     }
 
     // 7. Double ConnectAsync throws.
-    [Fact]
+    [TestMethod]
     public async Task DoubleConnect_Throws()
     {
         var (listener, port) = StartListener();
@@ -248,7 +249,7 @@ public class LocoNetTcpClientResilienceTests2
     }
 
     // 8. A throwing MessageReceived handler does not kill the supervisor — subsequent frames still arrive.
-    [Fact]
+    [TestMethod]
     public async Task ThrowingMessageHandler_DoesNotKillSupervisor()
     {
         var (listener, port) = StartListener();

@@ -1,13 +1,14 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace LocoNet.Net.Tests;
 
+[TestClass]
 public class LongAckAwaiterTests
 {
-    [Fact]
+    [TestMethod]
     public async Task ResolvesOnMatchingLongAck()
     {
         var ln = new FakeLocoNet();
@@ -25,7 +26,7 @@ public class LongAckAwaiterTests
         Assert.Equal(0x7F, code);
     }
 
-    [Fact]
+    [TestMethod]
     public async Task DeliversInFifoOrderForSameOpcode()
     {
         var ln = new FakeLocoNet();
@@ -41,7 +42,7 @@ public class LongAckAwaiterTests
         Assert.Equal(0x22, await t2);
     }
 
-    [Fact]
+    [TestMethod]
     public async Task IgnoresAckForDifferentOpcode()
     {
         var ln = new FakeLocoNet();
@@ -54,7 +55,7 @@ public class LongAckAwaiterTests
         await Assert.ThrowsAsync<TimeoutException>(() => task);
     }
 
-    [Fact]
+    [TestMethod]
     public async Task TimesOutWhenNoAckArrives()
     {
         var ln = new FakeLocoNet();
@@ -64,7 +65,7 @@ public class LongAckAwaiterTests
         await Assert.ThrowsAsync<TimeoutException>(() => task);
     }
 
-    [Fact]
+    [TestMethod]
     public async Task RespectsExternalCancellation()
     {
         var ln = new FakeLocoNet();
@@ -76,7 +77,7 @@ public class LongAckAwaiterTests
         await Assert.ThrowsAnyAsync<OperationCanceledException>(() => task);
     }
 
-    [Fact]
+    [TestMethod]
     public async Task DisposeFailsPendingWaiters()
     {
         var ln = new FakeLocoNet();

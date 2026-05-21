@@ -1,10 +1,11 @@
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace LocoNet.Net.Tests;
 
+[TestClass]
 public class LncvMessageTests
 {
-    [Fact]
+    [TestMethod]
     public void MakeResponse_ProducesParseableFrame()
     {
         var msg = LncvMessage.MakeResponse(src: 0x42, deviceClass: 0x1234, cv: 0x00FF, value: 0xBEEF, flags: 0x80);
@@ -22,7 +23,7 @@ public class LncvMessageTests
         Assert.Equal(0x80, LncvMessage.Flags(msg));
     }
 
-    [Fact]
+    [TestMethod]
     public void EncodeData_RestoresHighBitsViaPxct()
     {
         byte[] data = { 0x80, 0x01, 0xFF, 0x7F, 0x00, 0x88, 0x91 };
@@ -42,7 +43,7 @@ public class LncvMessageTests
         }
     }
 
-    [Fact]
+    [TestMethod]
     public void IsLncv_RejectsWrongOpcode()
     {
         var notLncv = LnMsg.Make(OpCode.LocoSpd, 0x01, 0x02);

@@ -1,11 +1,12 @@
 using System.Collections.Generic;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace LocoNet.Net.Tests;
 
+[TestClass]
 public class LocoNetMessageBufferTests
 {
-    [Fact]
+    [TestMethod]
     public void ParsesSingleCompleteFrame()
     {
         var buffer = new LocoNetMessageBuffer();
@@ -23,7 +24,7 @@ public class LocoNetMessageBufferTests
         Assert.Equal(0ul, buffer.Stats.RxErrors);
     }
 
-    [Fact]
+    [TestMethod]
     public void ResyncsOnNewOpcodeMidFrame()
     {
         var buffer = new LocoNetMessageBuffer();
@@ -41,7 +42,7 @@ public class LocoNetMessageBufferTests
         Assert.Equal(good, last!.Value);
     }
 
-    [Fact]
+    [TestMethod]
     public void IncrementsErrorCountOnBadChecksum()
     {
         var buffer = new LocoNetMessageBuffer();
@@ -57,7 +58,7 @@ public class LocoNetMessageBufferTests
         Assert.Equal(1ul, buffer.Stats.RxErrors);
     }
 
-    [Fact]
+    [TestMethod]
     public void ParsesMultipleFramesViaAddBytes()
     {
         var buffer = new LocoNetMessageBuffer();
@@ -77,7 +78,7 @@ public class LocoNetMessageBufferTests
         Assert.Equal(2ul, buffer.Stats.RxPackets);
     }
 
-    [Fact]
+    [TestMethod]
     public void HandlesVariableLengthFrames()
     {
         // OPC_PEER_XFER (0xE5) carries its own length in byte [1]. Use a 15-byte LNCV-style frame.
